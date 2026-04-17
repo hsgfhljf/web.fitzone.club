@@ -9,20 +9,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Раздача статических файлов (HTML, CSS, JS)
+// Раздача статических файлов
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Подключение роутов
 const authRoutes = require('./routes/auth');
+const trainingsRoutes = require('./routes/trainings');
 
 app.use('/api/auth', authRoutes);
+app.use('/api/trainings', trainingsRoutes);
 
 // Проверка работы API
 app.get('/', (req, res) => {
     res.json({ message: 'FitZone API работает!' });
 });
 
-// Запуск сервера
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`✅ Сервер запущен на http://localhost:${PORT}`);
