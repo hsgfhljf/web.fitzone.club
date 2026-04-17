@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация - FitZone Club</title>
+    <title>Вход - FitZone Club</title>
     <style>
         * {
             margin: 0;
@@ -217,22 +217,40 @@
             color: #999;
             user-select: none;
         }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .checkbox-label input {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .forgot-link {
+            color: #667eea;
+            font-size: 14px;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🏋️ FitZone Club</h1>
-        <div class="subtitle">Создайте новый аккаунт</div>
+        <div class="subtitle">Войдите в свой аккаунт</div>
 
         <div id="alert" class="alert"></div>
 
-        <form id="registerForm" onsubmit="return false;">
-            <div class="form-group">
-                <label>Имя</label>
-                <input type="text" id="name" placeholder="Введите ваше имя" autocomplete="name">
-                <div class="error-message" id="nameError"></div>
-            </div>
-
+        <form id="loginForm" onsubmit="return false;">
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" id="email" placeholder="example@mail.com" autocomplete="email">
@@ -242,21 +260,28 @@
             <div class="form-group">
                 <label>Пароль</label>
                 <div class="password-wrapper">
-                    <input type="password" id="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+                    <input type="password" id="password" placeholder="Введите пароль" autocomplete="current-password">
                     <span class="toggle-password" onclick="togglePassword()">👁️</span>
                 </div>
                 <div class="error-message" id="passwordError"></div>
             </div>
 
-            <button type="submit" id="submitBtn" onclick="register()">Зарегистрироваться</button>
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="rememberMe"> Запомнить меня
+                </label>
+                <a href="#" class="forgot-link" onclick="forgotPassword(event)">Забыли пароль?</a>
+            </div>
+
+            <button type="submit" id="submitBtn" onclick="login()">Войти</button>
         </form>
 
         <div class="divider">
-            <span>уже есть аккаунт?</span>
+            <span>или</span>
         </div>
 
         <div class="links">
-            <a href="/auth/login.html">🔑 Войти в аккаунт</a>
+            <a href="/auth/register.html">📝 Создать аккаунт</a>
             <a href="/">🏠 На главную</a>
         </div>
     </div>
@@ -264,6 +289,7 @@
     <script>
         const API_URL = 'http://localhost:5000/api';
 
+        // Переключение видимости пароля
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleSpan = document.querySelector('.toggle-password');
@@ -277,19 +303,17 @@
             }
         }
 
-        function validateForm(name, email, password) {
+        // Валидация на фронтенде
+        function validateForm(email, password) {
             let isValid = true;
             
+            // Скрываем все ошибки
             document.querySelectorAll('.error-message').forEach(el => {
                 el.classList.remove('show');
                 el.textContent = '';
             });
             
-            if (!name || name.trim().length < 2) {
-                showError('nameError', 'Имя должно содержать минимум 2 символа');
-                isValid = false;
-            }
-            
+            // Валидация email
             if (!email) {
                 showError('emailError', 'Введите email');
                 isValid = false;
@@ -298,6 +322,7 @@
                 isValid = false;
             }
             
+            // Валидация пароля
             if (!password) {
                 showError('passwordError', 'Введите пароль');
                 isValid = false;
@@ -325,65 +350,100 @@
             }, 5000);
         }
 
-        async function register() {
-            const name = document.getElementById('name').value.trim();
+        // Основная функция входа
+        async function login() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
             const submitBtn = document.getElementById('submitBtn');
             
-            if (!validateForm(name, email, password)) {
+            // Валидация
+            if (!validateForm(email, password)) {
                 return;
             }
             
+            // Блокируем кнопку
             submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Регистрация...';
-            showAlert('info', 'Создание аккаунта...');
+            submitBtn.textContent = '⏳ Вход...';
+            showAlert('info', 'Проверка данных...');
             
             try {
-                const response = await fetch(`${API_URL}/auth/register`, {
+                const response = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ email, password })
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('userName', data.user.name);
-                    localStorage.setItem('userEmail', data.user.email);
+                    // Сохраняем токен
+                    if (rememberMe) {
+                        // На 7 дней
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('rememberMe', 'true');
+                    } else {
+                        // Только на сессию (sessionStorage)
+                        sessionStorage.setItem('token', data.token);
+                        localStorage.removeItem('rememberMe');
+                    }
                     
-                    showAlert('success', '✅ Регистрация успешна! Перенаправление...');
+                    // Сохраняем данные пользователя
+                    if (data.user) {
+                        localStorage.setItem('userName', data.user.name);
+                        localStorage.setItem('userEmail', data.user.email);
+                    }
                     
+                    showAlert('success', '✅ Успешный вход! Перенаправление...');
+                    
+                    // Редирект на профиль или на сохранённую страницу
                     setTimeout(() => {
-                        window.location.href = '/profile.html';
+                        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/profile.html';
+                        sessionStorage.removeItem('redirectAfterLogin');
+                        window.location.href = redirectUrl;
                     }, 1000);
                 } else {
-                    let errorMessage = data.error || 'Ошибка регистрации';
+                    // Ошибка входа
+                    let errorMessage = data.error || 'Ошибка входа';
                     if (data.errors && data.errors.length > 0) {
                         errorMessage = data.errors.join(', ');
                     }
                     showAlert('error', '❌ ' + errorMessage);
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Зарегистрироваться';
+                    submitBtn.textContent = 'Войти';
                 }
             } catch (error) {
-                showAlert('error', '❌ Ошибка подключения к серверу');
+                console.error('Ошибка:', error);
+                showAlert('error', '❌ Ошибка подключения к серверу. Убедитесь, что сервер запущен.');
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Зарегистрироваться';
+                submitBtn.textContent = 'Войти';
             }
         }
 
-        document.getElementById('registerForm').addEventListener('keypress', function(e) {
+        // Восстановление пароля (заглушка)
+        function forgotPassword(event) {
+            event.preventDefault();
+            showAlert('info', '📧 Функция восстановления пароля будет доступна позже. Обратитесь к администратору.');
+        }
+
+        // Вход по Enter
+        document.getElementById('loginForm').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                register();
+                login();
             }
         });
 
+        // Проверка, был ли сохранён "Запомнить меня"
+        if (localStorage.getItem('rememberMe') === 'true' && localStorage.getItem('token')) {
+            document.getElementById('rememberMe').checked = true;
+        }
+
+        // Если пользователь уже авторизован - редирект на профиль
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (token) {
+            // Проверяем, не истёк ли токен (опционально)
             window.location.href = '/profile.html';
         }
     </script>
