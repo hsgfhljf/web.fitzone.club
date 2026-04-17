@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - FitZone Club</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #1e7e34;
+        }
+        .error {
+            color: red;
+            background: #ffe0e0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            background: #e0ffe0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏋️ FitZone Club</h1>
+        <h2>Регистрация</h2>
+        
+        <div id="message"></div>
+        
+        <input type="text" id="name" placeholder="Имя">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Пароль (минимум 6 символов)">
+        <button onclick="register()">Зарегистрироваться</button>
+        
+        <div class="link">
+            Уже есть аккаунт? <a href="/auth/login.html">Войти</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        async function register() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+            
+            messageDiv.innerHTML = '<div class="info">⏳ Регистрация...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Сохраняем токен
+                    localStorage.setItem('token', data.token);
+                    messageDiv.innerHTML = `<div class="success">✅ ${data.message}</div>`;
+                    // Редирект на профиль
+                    setTimeout(() => {
+                        window.location.href = '/profile.html';
+                    }, 1000);
+                } else {
+                    messageDiv.innerHTML = `<div class="error">❌ ${data.error || data.errors?.join(', ') || 'Ошибка регистрации'}</div>`;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+            }
+        }
+
+        // Если уже авторизован - редирект на профиль
+        if (localStorage.getItem('token')) {
+            window.location.href = '/profile.html';
+        }
+    </script>
+</body>
+</html>
