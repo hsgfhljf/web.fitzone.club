@@ -1,0 +1,48 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+}
+.container {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.info {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+.error {
+    color: red;
+    background: #ffe0e0;
+    padding: 10px;
+    border-radius: 5px;
+}
+.success {
+    color: green;
+    background: #e0ffe0;
+    padding: 10px;
+    border-radius: 5px;
+}
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background: #0056b3;
+}
+.logout {
+    background: #dc3545;
+    margin-left: 10px;
+}
+.logout:hover {
+    background: #a71d2a;
+}
