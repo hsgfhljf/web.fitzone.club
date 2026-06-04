@@ -349,3 +349,197 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Модальное окно */
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    width: 100%;
+    padding: 12px;
+    background: #999;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* Фильтры */
+.filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.filter-input, .filter-select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 150px;
+}
+
+.btn-filter, .btn-filter-reset {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-filter { background: #667eea; color: white; }
+.btn-filter-reset { background: #999; color: white; }
+
+/* Профиль */
+.profile-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.avatar-large {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 36px;
+    color: white;
+}
+
+.profile-info {
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+/* Детальная страница */
+.training-detail {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+}
+
+.detail-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.detail-type {
+    color: #667eea;
+    margin-bottom: 20px;
+}
+
+.detail-info {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.detail-info div {
+    margin: 10px 0;
+}
+
+.detail-price {
+    font-size: 32px;
+    font-weight: bold;
+    color: #667eea;
+    margin: 20px 0;
+}
+
+.btn-back {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #667eea;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.favorite-btn-large {
+    width: 100%;
+    padding: 12px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .filters {
+        flex-direction: column;
+    }
+    
+    .trainings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav {
+        gap: 10px;
+    }
+    
+    .nav a {
+        font-size: 14px;
+    }
+}

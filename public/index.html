@@ -3,58 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitZone Club - Главная</title>
+    <title>FitZone Club</title>
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-    <!-- Шапка -->
     <div class="header">
         <div class="header-content">
             <div class="logo">🏋️ FitZone Club</div>
             <div class="nav">
-                <a href="/">Главная</a>
-                <a href="/schedule.html">Расписание</a>
-                <a href="/profile.html">Профиль</a>
+                <a href="#" data-page="home">Главная</a>
+                <a href="#" data-page="schedule">Расписание</a>
+                <a href="#" data-page="favorites">Избранное</a>
+                <a href="#" data-page="profile">Профиль</a>
             </div>
-            <div id="authSection">
-                <!-- Сюда будет вставлен HTML авторизации -->
-            </div>
+            <div id="authSection"></div>
         </div>
     </div>
 
-    <!-- Hero секция -->
-    <div class="hero">
-        <h1>Стань сильнее с FitZone</h1>
-        <p>Профессиональные тренировки, лучшие тренеры и современное оборудование</p>
+    <div id="pageContent">
+        <!-- Сюда динамически загружается контент -->
+        <div class="loading"><div class="spinner"></div><p>Загрузка...</p></div>
     </div>
 
-    <!-- Основной контент -->
-    <div class="container">
-        <h2 class="section-title">🔥 Популярные тренировки</h2>
-        <div id="trainingsContainer">
-            <!-- Сюда будут загружены карточки -->
-        </div>
-    </div>
-
-    <!-- Модальное окно -->
-    <div id="bookingModal" class="modal">
-        <div class="modal-content">
-            <h3>Запись на тренировку</h3>
-            <p id="modalTrainingTitle"></p>
-            <p>Вы уверены, что хотите записаться?</p>
-            <div class="modal-buttons">
-                <button class="modal-btn-confirm" onclick="confirmBooking()">Да, записаться</button>
-                <button class="modal-btn-cancel" onclick="closeModal()">Отмена</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Футер -->
     <div class="footer">
         <p>&copy; 2026 FitZone Club. Все права защищены.</p>
-        <p>📍 г. Москва, ул. Спортивная, 15 | 📞 +7 (999) 123-45-67</p>
     </div>
 
-    <script src="/js/main.js"></script>
+    <script src="/js/app.js"></script>
 </body>
 </html>
