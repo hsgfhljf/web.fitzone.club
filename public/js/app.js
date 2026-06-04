@@ -1,9 +1,30 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api' 
+    : 'https://fitzone-backend.onrender.com/api';
 const STORAGE_KEYS = {
     TOKEN: 'fitzone_token',
     USER: 'fitzone_user',
     FAVORITES: 'fitzone_favorites'
 };
+
+window.addEventListener('error', (event) => {
+    console.error('Глобальная ошибка:', event.error);
+    showNotification('Произошла ошибка. Попробуйте обновить страницу.', 'error');
+});
+
+async function safeFetch(url, options = {}) {
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response;
+    } catch (error) {
+        console.error('Ошибка запроса:', error);
+        showNotification('❌ Проблема с соединением. Проверьте интернет.', 'error');
+        throw error;
+    }
+}
 
 // ========== Утилиты ==========
 function getToken() {
