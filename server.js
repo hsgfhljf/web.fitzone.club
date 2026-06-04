@@ -11,9 +11,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const authRoutes = require('./routes/auth');
 const trainingsRoutes = require('./routes/trainings');
+const bookingsRoutes = require('./routes/bookings');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/trainings', trainingsRoutes);
+app.use('/api/bookings', bookingsRoutes);
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -26,20 +28,12 @@ app.get('*', (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`✅ Сервер запущен на http://localhost:${PORT}`);
-});
-
-const bookingsRoutes = require('./routes/bookings');
-app.use('/api/bookings', bookingsRoutes);
-// В конце server.js, перед app.listen:
-
-// Обработка 404 - отдаём кастомную страницу
+// Обработка 404
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
+// ТОЛЬКО ОДНО ОБЪЯВЛЕНИЕ PORT (удали другие, если есть)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`✅ Сервер запущен на порту ${PORT}`);
