@@ -133,6 +133,93 @@ function toggleFavorite(trainingId) {
     loadPage(currentPage);
 }
 
+// ========== Бронирование ==========
+async function bookTraining(trainingId) {
+    if (!isAuthenticated()) {
+        showNotification('Войдите, чтобы записаться на тренировку', 'error');
+        showAuthModal('login');
+        return;
+    }
+    
+    showNotification('⏳ Отправка запроса...', 'info');
+    
+    try {
+        const token = getToken();
+        const response = await fetch(`${API_URL}/bookings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ trainingId })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('✅ ' + data.message, 'success');
+            // Обновляем текущую страницу
+            const currentPage = document.querySelector('.nav a.active')?.dataset.page || 'home';
+            loadPage(currentPage);
+        } else {
+            showNotification('❌ ' + (data.error || 'Ошибка записи'), 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Ошибка подключения к серверу', 'error');
+    }
+}
+
+async function cancelBooking(bookingId, trainingId) {
+    if (!confirm('Отменить запись на тренировку?')) return;
+    
+    showNotification('⏳ Отмена записи...', 'info');
+    
+    try {
+        const token = getToken();
+        const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('✅ Запись отменена', 'success');
+            renderProfile();
+        } else {
+            showNotification('❌ ' + (data.error || 'Ошибка отмены'), 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Ошибка подключения к серверу', 'error');
+    }
+}
+
+async function cancelBooking(bookingId, trainingId) {
+    if (!confirm('Отменить запись на тренировку?')) return;
+    
+    showNotification('⏳ Отмена записи...', 'info');
+    
+    try {
+        const token = getToken();
+        const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('✅ Запись отменена', 'success');
+            // Возвращаем место на тренировке
+            await fetch(`${API_URL}/trainings/${trainingId}`);
+            renderProfile(); // Обновляем профиль
+        } else {
+            showNotification('❌ ' + (data.error || 'Ошибка отмены'), 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Ошибка подключения к серверу', 'error');
+    }
+}
 // ========== UI компоненты ==========
 function updateAuthUI() {
     const authSection = document.getElementById('authSection');
@@ -254,20 +341,41 @@ async function renderHome() {
     
     try {
         const response = await fetch(`${API_URL}/trainings`);
+        
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки');
+        }
+        
         const data = await response.json();
         const trainings = data.trainings || [];
         const grid = document.getElementById('trainingsGrid');
+        
+        if (!grid) return;
+        
         if (trainings.length === 0) {
             grid.innerHTML = '<div class="empty">📭 Нет доступных тренировок</div>';
         } else {
             grid.innerHTML = renderTrainingsGrid(trainings.slice(0, 6));
         }
     } catch (error) {
-        document.getElementById('trainingsGrid').innerHTML = '<div class="error">❌ Ошибка загрузки. <button onclick="renderHome()">Повторить</button></div>';
+        console.error('Ошибка загрузки главной:', error);
+        const grid = document.getElementById('trainingsGrid');
+        if (grid) {
+            grid.innerHTML = `
+                <div class="error">
+                    <p>❌ Не удалось загрузить тренировки</p>
+                    <button onclick="renderHome()" style="margin-top:15px;padding:10px 20px;background:#667eea;color:white;border:none;border-radius:8px;cursor:pointer">Повторить</button>
+                </div>
+            `;
+        }
     }
 }
 
 function renderTrainingsGrid(trainings) {
+    if (!trainings || trainings.length === 0) {
+        return '<div class="empty">📭 Нет доступных тренировок</div>';
+    }
+    
     return trainings.map(t => `
         <div class="training-card" onclick="viewTraining(${t.id})">
             <div class="card-image">${getTypeIcon(t.type)}</div>
@@ -282,12 +390,18 @@ function renderTrainingsGrid(trainings) {
                 <div class="card-title">${escapeHtml(t.title)}</div>
                 <div class="card-details">⏰ ${formatDateTime(t.date_time)}</div>
                 <div class="card-price">${t.price || 0} $</div>
-                <button class="btn-book" onclick="event.stopPropagation(); viewTraining(${t.id})">Подробнее</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-book" onclick="event.stopPropagation(); bookTraining(${t.id})">
+                        📝 Записаться
+                    </button>
+                    <button class="btn-detail" onclick="event.stopPropagation(); viewTraining(${t.id})">
+                        📖 Подробнее
+                    </button>
+                </div>
             </div>
         </div>
     `).join('');
 }
-
 async function renderSchedule() {
     const container = document.getElementById('pageContent');
     container.innerHTML = `
@@ -369,7 +483,14 @@ function renderScheduleGrid(trainings) {
                 <div class="card-details">⏰ ${formatDateTime(t.date_time)}</div>
                 <div class="card-price">${t.price || 0} $</div>
                 <div class="card-seats ${t.available_seats <= 3 ? 'low' : ''}">🪑 Свободно: ${t.available_seats}/${t.max_seats}</div>
-                <button class="btn-book" onclick="event.stopPropagation(); viewTraining(${t.id})">Подробнее</button>
+                <div style="display: flex; gap: 10px;">
+    <button class="btn-book" onclick="event.stopPropagation(); bookTraining(${t.id})">
+        📝 Записаться
+    </button>
+    <button class="btn-detail" onclick="event.stopPropagation(); viewTraining(${t.id})">
+        📖 Подробнее
+    </button>
+</div>
             </div>
         </div>
     `).join('');
@@ -435,23 +556,31 @@ async function renderProfile() {
             <div id="profileContent" class="profile-card" style="text-align:center">
                 <div class="loading"><div class="spinner"></div><p>Загрузка профиля...</p></div>
             </div>
+            <div style="margin-top: 40px;">
+                <h3 class="section-title">📋 Мои записи на тренировки</h3>
+                <div id="bookingsList" class="bookings-list">
+                    <div class="loading"><div class="spinner"></div><p>Загрузка записей...</p></div>
+                </div>
+            </div>
         </div>
     `;
     
     try {
         const token = getToken();
-        const response = await fetch(`${API_URL}/auth/me`, {
+        
+        // Загружаем профиль пользователя
+        const profileResponse = await fetch(`${API_URL}/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        if (response.status === 401) {
+        if (profileResponse.status === 401) {
             logout();
             renderProfile();
             return;
         }
         
-        const data = await response.json();
-        const user = data.user;
+        const profileData = await profileResponse.json();
+        const user = profileData.user;
         
         document.getElementById('profileContent').innerHTML = `
             <div class="profile-header">
@@ -466,8 +595,44 @@ async function renderProfile() {
             </div>
             <button class="btn-logout" onclick="logout()" style="width:100%">Выйти из аккаунта</button>
         `;
+        
+        // Загружаем бронирования
+        const bookingsResponse = await fetch(`${API_URL}/bookings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const bookingsData = await bookingsResponse.json();
+        const bookings = bookingsData.bookings || [];
+        
+        const bookingsContainer = document.getElementById('bookingsList');
+        
+        if (bookings.length === 0) {
+            bookingsContainer.innerHTML = '<div class="empty">📭 У вас пока нет записей на тренировки</div>';
+        } else {
+            bookingsContainer.innerHTML = `
+                <div class="trainings-grid">
+                    ${bookings.map(b => `
+                        <div class="training-card">
+                            <div class="card-image">${getTypeIcon(b.type)}</div>
+                            <div class="card-content">
+                                <div class="card-title">${escapeHtml(b.title)}</div>
+                                <div class="card-details">
+                                    <div>⏰ ${formatDateTime(b.date_time)}</div>
+                                    <div>⏱️ ${b.duration_minutes || 60} мин</div>
+                                </div>
+                                <div class="card-price">${b.price || 0} $</div>
+                                <button class="btn-cancel" onclick="cancelBooking(${b.id}, ${b.training_id})">
+                                    ❌ Отменить запись
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
     } catch (error) {
         document.getElementById('profileContent').innerHTML = '<div class="error">❌ Ошибка загрузки профиля</div>';
+        document.getElementById('bookingsList').innerHTML = '<div class="error">❌ Ошибка загрузки записей</div>';
     }
 }
 
@@ -490,7 +655,11 @@ async function renderTraining(id) {
         const data = await response.json();
         const t = data.training;
         
-        document.getElementById('trainingContent').innerHTML = `
+        if (!t) {
+            throw new Error('Тренировка не найдена');
+        }
+        
+        const html = `
             <button class="btn-back" onclick="navigateTo('schedule')">← Назад к расписанию</button>
             <div class="detail-card">
                 <div class="detail-icon">${getTypeIcon(t.type)}</div>
@@ -504,7 +673,7 @@ async function renderTraining(id) {
                     <div><strong>📝 Описание:</strong> ${escapeHtml(t.description) || 'Описание отсутствует'}</div>
                 </div>
                 <div class="detail-price">${t.price || 0} $</div>
-                <button class="btn-book" onclick="showNotification('Запись временно недоступна', 'info')">
+                <button class="btn-book" onclick="bookTraining(${t.id})">
                     📝 Записаться на тренировку
                 </button>
                 <button class="favorite-btn-large ${isFavorite(t.id) ? 'active' : ''}" 
@@ -513,7 +682,10 @@ async function renderTraining(id) {
                 </button>
             </div>
         `;
+        
+        document.getElementById('trainingContent').innerHTML = html;
     } catch (error) {
+        console.error(error);
         document.getElementById('trainingContent').innerHTML = '<div class="error">❌ Тренировка не найдена</div>';
     }
 }
@@ -579,3 +751,5 @@ window.applyScheduleFilters = applyScheduleFilters;
 window.resetScheduleFilters = resetScheduleFilters;
 window.renderHome = renderHome;
 window.loadScheduleData = loadScheduleData;
+window.bookTraining = bookTraining;
+window.cancelBooking = cancelBooking;

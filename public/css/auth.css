@@ -234,3 +234,12 @@ button:disabled {
     font-size: 14px;
     text-decoration: none;
 }
+.btn-detail {
+    flex: 1;
+    padding: 10px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}

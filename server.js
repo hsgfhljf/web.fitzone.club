@@ -23,3 +23,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`✅ Сервер запущен на http://localhost:${PORT}`);
 });
+
+const bookingsRoutes = require('./routes/bookings');
+app.use('/api/bookings', bookingsRoutes);
